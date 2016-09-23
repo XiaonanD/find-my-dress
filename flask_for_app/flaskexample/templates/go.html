@@ -1,0 +1,15 @@
+{% extends "master.html" %}
+{% block title %} | Additional Title Info{% endblock %}
+{% block content %}
+    <div>
+      <h2>Input image</h2>
+      <img src="{{ filepath }}" style="width: 100px;"/>
+    </div>
+
+    <div>
+      <h2>Best Matches</h2>
+      <img src="{{ best_match_image_url }}" style="width: 200px"/>
+      <img src="{{ best_match_image_url2 }}" style="width: 200px"/>
+      <img src="{{ best_match_image_url3 }}" style="width: 200px"/>
+    </div>
+{% endblock %}
