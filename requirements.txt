@@ -1,0 +1,6 @@
+sqlalchemy
+# opencv
+numpy
+pandas
+flask
+scikit-image
