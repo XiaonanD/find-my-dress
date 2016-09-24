@@ -1,8 +1,13 @@
 import os
-
-# import cv2
+import cv2
 import numpy as np
 import pandas as pd
+import pickle
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
+from sklearn.neighbors import KNeighborsClassifier
+
+import unicodecsv as csv
 
 
 def find_best_match_image(input_image_path):
@@ -33,7 +38,7 @@ def get_hsv_histograms(img):
     return hsv_hist
 
 
-def process_image(img_file):
+def extract_image_features(img_file):
     """
     Takes in a path to a folder and returns processed image histogram frequency
     """
@@ -64,3 +69,29 @@ def process_image(img_file):
     data_df = pd.concat(frames)
 
     return data_df
+
+def load_model():
+    pkl_file = open('/Users/amyshapiro/github/find-my-dress/data/knn6.pkl', 'rb')
+    return pickle.load(pkl_file)
+
+def find_similar_items(model, input_image_features):
+    '''Take in an array of probabilities from sklearn model output and return
+    a dataframe with the image ID, probability of dress, and array index'''
+    #import ipdb; ipdb.set_trace();
+    probs = model.predict_proba(input_image_features)
+    print probs
+    probability_list = []
+    for dress_id, probability in enumerate(probs[0]):
+        print dress_id, probability
+        if probability > 0:
+            probability_list.append({
+                'dress_id' : dress_id,
+                'probability' : probability,
+                })
+    return probability_list
+
+def load_item_records(item_csv_path):
+    with open(item_csv_path, 'rb') as f:
+        records = list(csv.reader(f))
+        header, records = records[0], records[1:]
+        return [dict(zip(header, rec)) for rec in records]
