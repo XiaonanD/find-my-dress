@@ -1,4 +1,6 @@
 sqlalchemy
+alembic
+mako
 # opencv
 numpy
 pandas
@@ -6,3 +8,5 @@ flask
 scikit-image
 scikit-learn
 unicodecsv
+boto3
+psycopg2
