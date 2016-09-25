@@ -1,6 +1,10 @@
 sqlalchemy
+alembic
+mako
 # opencv
 numpy
 pandas
 flask
 scikit-image
+boto3
+psycopg2
