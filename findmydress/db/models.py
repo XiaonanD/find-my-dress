@@ -50,6 +50,7 @@ class ItemImage(Base):
 class ImageDerivative(Base):
     __tablename__ = 'image_derivatives'
 
+    id = Column(Integer, primary_key=True)
     type = Column(String)
     original_image = Column(Integer, ForeignKey('item_images.id'))
     image_path = Column(String)
