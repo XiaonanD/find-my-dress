@@ -8,9 +8,13 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
-engine = create_engine('postgresql+psycopg2://localhost/findmydress', echo=True)
-Session = sessionmaker()
-Session.configure(bind=engine)
+def Session():
+    from findmydress.web import config
+
+    engine = create_engine(config.DB_CONNECTION_STRING, echo=True)
+    session = sessionmaker()
+    session.configure(bind=engine)
+    return session()
 
 
 Base = declarative_base()

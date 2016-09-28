@@ -14,3 +14,4 @@ STATIC_LABELS = [
     ]
 
 AWS_PROFILE = 'findmydress-web'
+DB_CONNECTION_STRING = 'postgresql+psycopg2://localhost/findmydress'

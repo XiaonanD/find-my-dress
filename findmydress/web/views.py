@@ -45,7 +45,8 @@ def match_item():
             continue
         prob_result.update(dress_result)
 
-    import ipdb; ipdb.set_trace();
+    probability_list.sort(key=lambda x: x['probability'], reverse=True)
+
     return render_template(
         'match.html',
         filepath=url_path,
