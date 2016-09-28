@@ -10,7 +10,7 @@
       <h2>Best Matches</h2>
       <h4>Click on a dress to shop!<h4>
       {% for match in matches %}
-      <a href="{{ match.detail_url }}">
+      <a href="{{ match.detail_url }}" title="{{ match.probability }}">
         <img src="{{ match.image_url_high_res }}" style="width: 250px"/>
       </a>
       {% endfor %}
