@@ -25,7 +25,7 @@
             <h4>Upload an image of a dress and I will find where to buy it</h4>
 
         {% block content %}
-        <form method="post" action="{{ url_for('match') }}" enctype="multipart/form-data">
+        <form method="post" action="{{ url_for('match_item') }}" enctype="multipart/form-data">
             <input type="file" name="query" placeholder="Upload photo">
             <button type="submit" name="push">Submit</button>
         </form>
