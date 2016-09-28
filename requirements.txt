@@ -4,3 +4,5 @@ numpy
 pandas
 flask
 scikit-image
+scikit-learn
+unicodecsv
