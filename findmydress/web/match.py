@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import cv2
 import numpy as np
@@ -8,6 +9,9 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
 
 import unicodecsv as csv
+
+from findmydress.db import models
+from findmydress.web import config, files
 
 
 def find_best_match_image(input_image_path):
@@ -70,28 +74,74 @@ def extract_image_features(img_file):
 
     return data_df
 
-def load_model():
-    pkl_file = open('/Users/amyshapiro/github/find-my-dress/data/knn6.pkl', 'rb')
-    return pickle.load(pkl_file)
+
+def load_model(model_path=os.path.join(config.DATA_ROOT, 'knn6.pkl')):
+    return pickle.load(open(model_path, 'rb'))
+
 
 def find_similar_items(model, input_image_features):
-    '''Take in an array of probabilities from sklearn model output and return
-    a dataframe with the image ID, probability of dress, and array index'''
-    #import ipdb; ipdb.set_trace();
+    '''
+    Take in an array of probabilities from sklearn model output and return a
+    dataframe with the image ID, probability of dress, and array index.
+    '''
     probs = model.predict_proba(input_image_features)
-    print probs
+    # print(probs)
     probability_list = []
     for dress_id, probability in enumerate(probs[0]):
-        print dress_id, probability
+        # print(dress_id, probability)
         if probability > 0:
             probability_list.append({
-                'dress_id' : dress_id,
-                'probability' : probability,
+                'dress_id': dress_id,
+                'probability': probability,
                 })
     return probability_list
 
-def load_item_records(item_csv_path):
+
+def load_item_records():
+    model_item_mapping = load_model_item_mapping()
+    reverse_model_item_mapping = {v: k for k, v in model_item_mapping.iteritems()}
+
+    session = models.Session()
+    item_records = []
+
+    # Build index of Item ID -> URL of first image
+    first_image_urls_map = {}
+    first_images = (session.query(models.ItemImage)
+                    .filter(models.ItemImage.position==0)
+                    .all())
+    first_image_urls_map = {img.item_id: img.get_s3_image_url(files.s3_client)
+                            for img in first_images}
+    
+    # Build list of item records based on item mapping and first images
+    for item in session.query(models.Item).all():
+        item_records.append({
+            'dress_id': reverse_model_item_mapping.get(item.id),
+            'detail_url': item.detail_url,
+            'image_url_high_res': first_image_urls_map.get(item.id),
+            })
+    return item_records
+
+
+def load_model_item_mapping(item_csv_path=os.path.join(config.DATA_ROOT, 'dress_details.csv')):
+    '''
+    This is a hack to map from the pre-sqlalchemy IDs to the primary key IDs in
+    the database. At startup, we load a mapping between the old and new IDs and
+    use it when querying for Items/ItemImages.
+    '''
     with open(item_csv_path, 'rb') as f:
         records = list(csv.reader(f))
         header, records = records[0], records[1:]
-        return [dict(zip(header, rec)) for rec in records]
+        original_recs = [dict(zip(header, rec)) for rec in records]
+    
+    original_recs_by_url = {r['detail_url']: r for r in original_recs}
+
+    item_mapping = {}
+    session = models.Session()
+    for item in session.query(models.Item).all():
+        mapped_item = original_recs_by_url.get(item.detail_url)
+        if not mapped_item:
+            print("NO MAPPING FOUND: {}".format(item.detail_url))
+            continue
+        item_mapping[int(mapped_item['dress_id'])] = item.id
+    
+    return item_mapping
