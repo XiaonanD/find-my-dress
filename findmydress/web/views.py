@@ -12,8 +12,8 @@ def index():
     return render_template('master.html')
 
 
-@app.route('/go', methods=['POST'])
-def go():
+@app.route('/match', methods=['POST'])
+def match():
     # import ipdb; ipdb.set_trace();
     file = request.files['query']
     uploads_root = '/Users/amyshapiro/github/find-my-dress/findmydress/web/static/uploads'
@@ -36,7 +36,7 @@ def go():
         prob_result.update(dress_result)
 
     return render_template(
-        'go.html',
+        'match.html',
         filepath=url_path,
         matches=probability_list,
     )
