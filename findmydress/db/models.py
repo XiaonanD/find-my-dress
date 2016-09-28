@@ -1,5 +1,6 @@
 import json
 import os
+import urlparse
 
 import boto3
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
@@ -45,6 +46,19 @@ class ItemImage(Base):
     def __repr__(self):
         return u'<ItemImage (id={} position={} image_path="{}")>'.format(
             self.id, self.position, self.image_path,
+            )
+
+    def get_s3_image_url(self, conn):
+        parsed = urlparse.urlparse(self.image_s3_url)
+        bucket = parsed.netloc
+        path = parsed.path.lstrip('/')
+
+        return conn.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={
+                'Bucket': bucket,
+                'Key': path,
+                }
             )
 
 
