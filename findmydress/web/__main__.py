@@ -2,4 +2,6 @@
 from findmydress.web.app import app
 from findmydress.web import views
 
-app.run(debug=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)
