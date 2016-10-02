@@ -1,9 +1,8 @@
 import os
 
-APP_ROOT = os.path.dirname(os.path.realpath(__file__))
+import boto3
 
-# TODO: remove hard-coded facepalm here - move to config
-IMAGE_FILES_ROOT = '/Users/dave/projects/modscrape/files/images'
+APP_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 STATIC_ROOT = os.path.join(APP_ROOT, 'static')
 DATA_ROOT = os.path.abspath(os.path.join(APP_ROOT, '../../data'))
@@ -15,3 +14,11 @@ STATIC_LABELS = [
 
 AWS_PROFILE = 'findmydress-web'
 DB_CONNECTION_STRING = 'postgresql+psycopg2://localhost/findmydress'
+IMAGES_S3_BUCKET = 'findmydress'
+
+
+def get_aws_session():
+    return boto3.Session(profile_name=AWS_PROFILE)
+
+def get_s3_connection():
+    return get_aws_session().client('s3')

@@ -1,17 +1,17 @@
 import json
 import os
 import urlparse
+import uuid
 
 import boto3
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
+from findmydress.web import config
 
 
-def Session():
-    from findmydress.web import config
-
-    engine = create_engine(config.DB_CONNECTION_STRING, echo=True)
+def Session(echo=False):
+    engine = create_engine(config.DB_CONNECTION_STRING, echo=echo)
     session = sessionmaker()
     session.configure(bind=engine)
     return session()
@@ -52,18 +52,8 @@ class ItemImage(Base):
             self.id, self.position, self.image_path,
             )
 
-    def get_s3_image_url(self, conn):
-        parsed = urlparse.urlparse(self.image_s3_url)
-        bucket = parsed.netloc
-        path = parsed.path.lstrip('/')
-
-        return conn.generate_presigned_url(
-            ClientMethod='get_object',
-            Params={
-                'Bucket': bucket,
-                'Key': path,
-                }
-            )
+    def get_s3_image_url(self):
+        return get_s3_image_url(self.image_s3_url)
 
 
 class ImageDerivative(Base):
@@ -73,6 +63,45 @@ class ImageDerivative(Base):
     type = Column(String)
     original_image = Column(Integer, ForeignKey('item_images.id'))
     image_s3_url = Column(String)
+
+    def get_s3_image_url(self):
+        return get_s3_image_url(self.image_s3_url)
+
+
+class ImageMatchRequest(Base):
+    __tablename__ = 'image_match_requests'
+
+    id = Column(Integer, primary_key=True)
+    image_s3_url = Column(String)
+    short_code = Column(String)
+
+
+def write_s3_image(image_data, mimetype):
+    conn = config.get_s3_connection()
+
+    image_id = uuid.uuid4().hex
+    # path = 'files/images/full/{}'.format(image_id)
+    path = 'test/{}'.format(image_id)
+    s3_url = 's3://{}/{}'.format(config.IMAGES_S3_BUCKET, path)
+    obj = conn.Object(config.IMAGES_S3_BUCKET, path)
+    obj.put(Body=image_data, ContentType=mimetype, ACL='private')
+    return s3_url
+    
+
+def get_s3_image_url(s3_key_path):
+    conn = config.get_s3_connection()
+
+    parsed = urlparse.urlparse(s3_key_path)
+    bucket = parsed.netloc
+    path = parsed.path.lstrip('/')
+
+    return conn.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': bucket,
+            'Key': path,
+            }
+        )
 
 
 def import_scraped_items(output_json_path, file_path_root):

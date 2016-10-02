@@ -8,6 +8,7 @@ from flask import (
     )
 
 from findmydress.db import models
+from findmydress.db.models import ItemImage, write_s3_image, ImageDerivative
 from findmydress.web import match, config
 from findmydress.web.app import app
 
@@ -77,22 +78,47 @@ def image_detail(image_id):
 def image_file(image_id):
     session = models.Session()
     image = session.query(models.ItemImage).get(image_id)
-    return send_from_directory(IMAGE_FILES_ROOT, image.image_path)
+
+    aws_session = config.get_aws_session()
+    s3 = aws_session.client('s3')
+    return flask.redirect(image.get_s3_image_url(s3))
 
 
 @app.route('/images/<int:image_id>/annotation', methods=['GET', 'POST'])
 def image_annotation_file(image_id):
+    session = models.Session()
+    annotation_image = (session.query(ImageDerivative)
+                        .filter(ImageDerivative.original_image == image_id)
+                        .filter(ImageDerivative.type == 'annotation')
+                        .one_or_none())
+
     if request.method == 'GET':
-        session = models.Session()
-        image = session.query(models.ItemImage).get(image_id)
-        return send_from_directory(IMAGE_FILES_ROOT, os.path.join('annotations', image.image_path))
+        if not annotation_image:
+            return "Not Found", 404
+
+        aws_session = config.get_aws_session()
+        s3 = aws_session.client('s3')
+        return flask.redirect(annotation_image.get_s3_image_url(s3))
 
     elif request.method == 'POST':
         mimetype, data = parse_data_url(flask.request.form['imgDataURL'])
-        with open('/tmp/sample-tag.png', 'w') as f:
-            f.write(data)
+        # TODO: validate that this is the same size as the original
+        aws_session = config.get_aws_session()
+        s3 = aws_session.resource('s3')
+        url = write_s3_image(data, mimetype, s3)
 
-        return "TODO: fill in image detail"
+        if not annotation_image:
+            annotation_image = ImageDerivative(
+                original_image=image_id,
+                image_s3_url=url,
+                type='annotation',
+            )
+        else:
+            annotation_image.image_s3_url = url
+        session.add(annotation_image)
+        session.commit()
+
+        return url
 
 
 DATA_URL_PATTERN = re.compile(r'data:(?P<mimetype>.+);(?P<encoding>base64),(?P<encoded_data>.+)$')
