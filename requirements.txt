@@ -1,12 +1,14 @@
-sqlalchemy
 alembic
-mako
+boto3
+flask
 # opencv
+gunicorn
+mako
 numpy
 pandas
-flask
+psycopg2
+scipy>=0.9
 scikit-image
 scikit-learn
+sqlalchemy
 unicodecsv
-boto3
-psycopg2
