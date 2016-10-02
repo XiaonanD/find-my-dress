@@ -10,25 +10,20 @@
         <link rel="apple-touch-icon" href="apple-touch-icon.png">
         <!-- Place favicon.ico in the root directory -->
 
+        {% block styles %}
         <link rel="stylesheet" href="/static/css/normalize.css">
         <link rel="stylesheet" href="/static/css/main.css">
-        <script src="/static/js/vendor/modernizr-2.8.3.min.js"></script>
 
         <!-- Bootstrap styles -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+        {% endblock %}
+
+        <script src="/static/js/vendor/modernizr-2.8.3.min.js"></script>
     </head>
     <body>
-        <header>
-            <h1>DressMe!</h1>
-        </header>
-            <h4>Upload an image of a dress and I will find where to buy it</h4>
-
         {% block content %}
-        <form method="post" action="{{ url_for('match_item') }}" enctype="multipart/form-data">
-            <input type="file" name="query" placeholder="Upload photo">
-            <button type="submit" name="push">Submit</button>
-        </form>
         {% endblock %}
 
         {% block scripts %}

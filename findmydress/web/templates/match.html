@@ -1,17 +1,30 @@
 {% extends "master.html" %}
 {% block title %} | Additional Title Info{% endblock %}
+
+{% block styles %}
+{{ super() }}
+
+<style>
+    img {
+        width: 250px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-    <div>
+    <div class="container">
       <h2>Your Upload</h2>
-      <img src="{{ filepath }}" style="width: 250px;"/>
+      <img class="img-rounded" src="{{ filepath }}"/>
     </div>
 
-    <div>
+    <div class="container">
       <h2>Best Matches</h2>
-      <h4>Click on a dress to shop!<h4>
+      <h4>Click on a dress to shop!</h4>
       {% for match in matches %}
       <a href="{{ match.detail_url }}" title="{{ match.probability }}">
-        <img src="{{ match.image_url_high_res }}" style="width: 250px"/>
+        <img class="img-rounded"
+             src="{{ match.image_url_high_res }}"
+             />
       </a>
       {% endfor %}
 
