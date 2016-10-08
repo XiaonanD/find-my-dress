@@ -13,7 +13,7 @@ STATIC_LABELS = [
     ]
 
 AWS_PROFILE = 'findmydress-web'
-DB_CONNECTION_STRING = 'postgresql+psycopg2://localhost/findmydress'
+DB_CONNECTION_STRING = 'postgresql+psycopg2://findmydress:Ooheum7hai2v@localhost:5433/findmydress'
 IMAGES_S3_BUCKET = 'findmydress'
 
 

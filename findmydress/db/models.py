@@ -75,6 +75,9 @@ class ImageMatchRequest(Base):
     image_s3_url = Column(String)
     short_code = Column(String)
 
+    def get_s3_image_url(self):
+        return get_s3_image_url(self.image_s3_url)
+
 
 def write_s3_image(image_data, mimetype):
     conn = config.get_s3_connection()
@@ -86,7 +89,7 @@ def write_s3_image(image_data, mimetype):
     obj = conn.Object(config.IMAGES_S3_BUCKET, path)
     obj.put(Body=image_data, ContentType=mimetype, ACL='private')
     return s3_url
-    
+
 
 def get_s3_image_url(s3_key_path):
     conn = config.get_s3_connection()
@@ -120,7 +123,7 @@ def import_scraped_items(output_json_path, file_path_root):
                 )
             session.add(item)
             session.commit()
-        
+
         item_images = []
         for img, item_img in zip(item_json['images'], item_json['item_images']):
             if item_img['type'] != 'high-res':

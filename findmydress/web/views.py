@@ -17,6 +17,24 @@ from findmydress.web.app import app
 def index():
     return render_template('index.html')
 
+@app.route('/match/<short_code>', methods=['GET'])
+
+def match_saved_item(short_code):
+    #find item url for short_code and render template with url
+    session = models.Session()
+    match = (session.query(models.ImageMatchRequest)
+                        .filter(models.ImageMatchRequest.short_code == short_code)
+                        .one_or_none())
+
+    if not match:
+        return "Not Found", 404
+
+    return render_template(
+        'match.html',
+        filepath=match.get_s3_image_url(),
+        matches = []
+        )
+
 
 @app.route('/match', methods=['GET', 'POST'])
 def match_item():
@@ -58,7 +76,7 @@ def match_item():
 def images():
     session = models.Session()
     images = session.query(models.ItemImage)[:30]
-    
+
     result_obj = {
         'labels': config.STATIC_LABELS,
         'imageURLs': [flask.url_for('image_file', image_id=i.id) for i in images],
