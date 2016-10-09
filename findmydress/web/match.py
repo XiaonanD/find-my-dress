@@ -75,7 +75,7 @@ def extract_image_features(img_file):
     return data_df
 
 
-def load_model(model_path=os.path.join(config.DATA_ROOT, 'knn6.pkl')):
+def load_model(model_path=config.MATCHING_MODEL_PATH):
     return pickle.load(open(model_path, 'rb'))
 
 
