@@ -1,5 +1,9 @@
 import os
 
+FLASK_BIND_HOST = '0.0.0.0'
+FLASK_BIND_PORT = 5000
+FLASK_DEBUG = False
+
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'findmydress/web/static')
 MATCHING_MODEL_PATH = os.path.join(PROJECT_ROOT, 'data/knn6.2016.09.24.pkl')
