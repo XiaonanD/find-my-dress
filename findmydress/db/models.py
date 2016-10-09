@@ -1,13 +1,13 @@
 import json
 import os
 import urlparse
-import uuid
 
 import boto3
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from findmydress.web import config
+
+from findmydress import aws, config
 
 
 def Session(echo=False):
@@ -80,7 +80,7 @@ class ImageMatchRequest(Base):
 
 
 def write_s3_image(image_data, mimetype, path):
-    conn = config.get_s3_connection()
+    conn = aws.get_s3_connection()
     s3_url = 's3://{}/{}'.format(config.IMAGES_S3_BUCKET, path)
     obj = conn.Object(config.IMAGES_S3_BUCKET, path)
     obj.put(Body=image_data, ContentType=mimetype, ACL='private')
@@ -88,7 +88,7 @@ def write_s3_image(image_data, mimetype, path):
 
 
 def get_s3_image_url(s3_key_path):
-    conn = config.get_s3_connection()
+    conn = aws.get_s3_connection()
 
     parsed = urlparse.urlparse(s3_key_path)
     bucket = parsed.netloc

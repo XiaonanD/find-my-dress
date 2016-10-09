@@ -10,8 +10,8 @@ from sklearn.neighbors import KNeighborsClassifier
 
 import unicodecsv as csv
 
+from findmydress import config
 from findmydress.db import models
-from findmydress.web import config, files
 
 
 def find_best_match_image(input_image_path):
@@ -103,7 +103,7 @@ def find_similar_items(model, input_image_features):
     return probability_list
 
 
-def load_model_item_mapping(item_csv_path=os.path.join(config.DATA_ROOT, 'dress_details.csv')):
+def load_model_item_mapping(item_csv_path=config.MATCHING_MODEL_DRESS_DETAILS_PATH):
     '''
     This is a hack to map from the pre-sqlalchemy IDs to the primary key IDs in
     the database. At startup, we load a mapping between the old and new IDs and

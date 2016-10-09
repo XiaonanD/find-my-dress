@@ -8,9 +8,10 @@ from flask import (
     redirect, render_template, request, url_for,
     )
 
+from findmydress import aws, config
 from findmydress.db import models
 from findmydress.db.models import ItemImage, write_s3_image, ImageDerivative
-from findmydress.web import match, config
+from findmydress.web import match
 from findmydress.web.app import app
 
 
@@ -116,7 +117,7 @@ def image_file(image_id):
     session = models.Session()
     image = session.query(models.ItemImage).get(image_id)
 
-    aws_session = config.get_aws_session()
+    aws_session = aws.get_aws_session()
     s3 = aws_session.client('s3')
     return flask.redirect(image.get_s3_image_url(s3))
 
@@ -133,14 +134,14 @@ def image_annotation_file(image_id):
         if not annotation_image:
             return "Not Found", 404
 
-        aws_session = config.get_aws_session()
+        aws_session = aws.get_aws_session()
         s3 = aws_session.client('s3')
         return flask.redirect(annotation_image.get_s3_image_url(s3))
 
     elif request.method == 'POST':
         mimetype, data = parse_data_url(flask.request.form['imgDataURL'])
         # TODO: validate that this is the same size as the original
-        aws_session = config.get_aws_session()
+        aws_session = aws.get_aws_session()
         s3 = aws_session.resource('s3')
 
         image_id = uuid.uuid4().hex
