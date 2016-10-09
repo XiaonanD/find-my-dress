@@ -1,6 +1,7 @@
 import base64
 import os
 import re
+import uuid
 
 import flask
 from flask import (
@@ -52,16 +53,21 @@ def match_item():
         match.extract_image_features(save_path),
         )
 
-    metadata = match.load_item_records()
+    session = models.Session()
+    dress_ids = [r['dress_id'] for r in probability_list if r['dress_id']]
+    dress_items = session.query(models.Item).filter(models.Item.id.in_(dress_ids))
+    dress_item_map = {d.id: d for d in dress_items}
 
-    dress_index = {item['dress_id']: item for item in metadata}
+    dress_images = (session.query(models.ItemImage)
+                    .filter(models.ItemImage.item_id.in_(dress_ids))
+                    .filter(models.ItemImage.position == 0))
+    dress_image_map = {d.item_id: d for d in dress_images}
 
     for prob_result in probability_list:
         # get an item from dress_index for prob_result
-        dress_result = dress_index.get(prob_result['dress_id'])
-        if not dress_result:
-            continue
-        prob_result.update(dress_result)
+        item_id = prob_result['dress_id']
+        prob_result['item'] = dress_item_map.get(item_id)
+        prob_result['image'] = dress_image_map.get(item_id)
 
     probability_list.sort(key=lambda x: x['probability'], reverse=True)
 
@@ -70,6 +76,19 @@ def match_item():
         filepath=url_path,
         matches=probability_list,
     )
+
+
+@app.route('/items/<int:item_id>', methods=['GET'])
+def item_detail(item_id):
+    session = models.Session()
+    item = session.query(models.Item).get(item_id)
+    if not item:
+        return "Not Found", 404
+
+    return render_template(
+        'item-detail.html',
+        item=item,
+        )
 
 
 @app.route('/images/')
@@ -123,7 +142,10 @@ def image_annotation_file(image_id):
         # TODO: validate that this is the same size as the original
         aws_session = config.get_aws_session()
         s3 = aws_session.resource('s3')
-        url = write_s3_image(data, mimetype, s3)
+
+        image_id = uuid.uuid4().hex
+        path = 'files/images/annotations/{}'.format(image_id)
+        url = write_s3_image(data, mimetype, path)
 
         if not annotation_image:
             annotation_image = ImageDerivative(

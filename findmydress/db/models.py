@@ -48,8 +48,8 @@ class ItemImage(Base):
     item = relationship("Item", primaryjoin=item_id == Item.id)
 
     def __repr__(self):
-        return u'<ItemImage (id={} position={} image_path="{}")>'.format(
-            self.id, self.position, self.image_path,
+        return u'<ItemImage (id={} position={} image_s3_url="{}")>'.format(
+            self.id, self.position, self.image_s3_url,
             )
 
     def get_s3_image_url(self):
@@ -79,12 +79,8 @@ class ImageMatchRequest(Base):
         return get_s3_image_url(self.image_s3_url)
 
 
-def write_s3_image(image_data, mimetype):
+def write_s3_image(image_data, mimetype, path):
     conn = config.get_s3_connection()
-
-    image_id = uuid.uuid4().hex
-    # path = 'files/images/full/{}'.format(image_id)
-    path = 'test/{}'.format(image_id)
     s3_url = 's3://{}/{}'.format(config.IMAGES_S3_BUCKET, path)
     obj = conn.Object(config.IMAGES_S3_BUCKET, path)
     obj.put(Body=image_data, ContentType=mimetype, ACL='private')

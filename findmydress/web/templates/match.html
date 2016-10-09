@@ -21,10 +21,14 @@
       <h2>Best Matches</h2>
       <h4>Click on a dress to shop!</h4>
       {% for match in matches %}
-      <a href="{{ match.detail_url }}" title="{{ match.probability }}">
+      <a href="{{ match.item.detail_url }}" title="{{ match.probability }}">
+          {% if match.image %}
         <img class="img-rounded"
-             src="{{ match.image_url_high_res }}"
+             src="{{ match.image.get_s3_image_url() }}"
              />
+          {% else %}
+          No image found.
+          {% endif %}
       </a>
       {% endfor %}
 

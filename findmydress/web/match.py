@@ -87,39 +87,20 @@ def find_similar_items(model, input_image_features):
     probs = model.predict_proba(input_image_features)
     # print(probs)
     probability_list = []
+
+    # HACK: the models were generated with a slightly different ID set,
+    # this maps the difference.
+    def item_id_for_model_dress_id(model_dress_id):
+        return MODEL_ITEM_MAPPING[model_dress_id]
+
     for dress_id, probability in enumerate(probs[0]):
         # print(dress_id, probability)
         if probability > 0:
             probability_list.append({
-                'dress_id': dress_id,
+                'dress_id': item_id_for_model_dress_id(dress_id),
                 'probability': probability,
                 })
     return probability_list
-
-
-def load_item_records():
-    model_item_mapping = load_model_item_mapping()
-    reverse_model_item_mapping = {v: k for k, v in model_item_mapping.iteritems()}
-
-    session = models.Session()
-    item_records = []
-
-    # Build index of Item ID -> URL of first image
-    first_image_urls_map = {}
-    first_images = (session.query(models.ItemImage)
-                    .filter(models.ItemImage.position==0)
-                    .all())
-    first_image_urls_map = {img.item_id: img.get_s3_image_url(files.s3_client)
-                            for img in first_images}
-    
-    # Build list of item records based on item mapping and first images
-    for item in session.query(models.Item).all():
-        item_records.append({
-            'dress_id': reverse_model_item_mapping.get(item.id),
-            'detail_url': item.detail_url,
-            'image_url_high_res': first_image_urls_map.get(item.id),
-            })
-    return item_records
 
 
 def load_model_item_mapping(item_csv_path=os.path.join(config.DATA_ROOT, 'dress_details.csv')):
@@ -145,3 +126,5 @@ def load_model_item_mapping(item_csv_path=os.path.join(config.DATA_ROOT, 'dress_
         item_mapping[int(mapped_item['dress_id'])] = item.id
     
     return item_mapping
+
+MODEL_ITEM_MAPPING = load_model_item_mapping()
